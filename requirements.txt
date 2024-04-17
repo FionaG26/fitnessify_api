@@ -2,3 +2,4 @@ Flask
 Flask-Bcrypt==0.7.1
 Flask-SQLAlchemy==3.0.0
 psycopg2-binary==2.9.1
+SQLAlchemy==1.4.25
