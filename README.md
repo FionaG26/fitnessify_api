@@ -64,7 +64,7 @@ fitnessify_api/
 
 ### Contributors
 
-- [Your Name](https://github.com/FionaG26)
+- [Fiona Githaiga](https://github.com/FionaG26)
 
 ### License
 
