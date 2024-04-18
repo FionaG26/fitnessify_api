@@ -57,9 +57,9 @@ fitnessify_api/
 │   ├── __init__.py
 │   └── test_routes.py
 │   └── test_models.py
-
 └── docs/
     └── api_documentation.md
+├── requirements.txt
 ```
 
 ### Contributors
