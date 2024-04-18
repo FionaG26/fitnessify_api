@@ -13,9 +13,7 @@ This project is about a simple user registration API built using Python with Fla
 2. Setup Virtual Environment:
    ```
    python3 -m venv venv
-   source venv/bin/activate  # For Unix/macOS
-   # or
-   venv\Scripts\activate  # For Windows
+   source venv/bin/activate 
    ```
 
 3. **Install Dependencies**:
@@ -58,6 +56,8 @@ fitnessify_api/
 ├── tests/
 │   ├── __init__.py
 │   └── test_routes.py
+│   └── test_models.py
+
 └── docs/
     └── api_documentation.md
 ```
