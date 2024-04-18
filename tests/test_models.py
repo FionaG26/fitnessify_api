@@ -2,6 +2,7 @@ import unittest
 from app import app, db
 from models import User
 
+
 class TestUserModel(unittest.TestCase):
 
     def setUp(self):
@@ -14,7 +15,10 @@ class TestUserModel(unittest.TestCase):
 
     def test_create_user(self):
         # Create a new user
-        user = User(username='test_user', email='test@example.com', password='test123')
+        user = User(
+            username='test_user',
+            email='test@example.com',
+            password='test123')
 
         # Add and commit the user to the database
         db.session.add(user)
@@ -27,6 +31,7 @@ class TestUserModel(unittest.TestCase):
         self.assertEqual(retrieved_user.username, 'test_user')
         self.assertEqual(retrieved_user.email, 'test@example.com')
         self.assertTrue(retrieved_user.password)  # Password should be hashed
+
 
 if __name__ == '__main__':
     unittest.main()

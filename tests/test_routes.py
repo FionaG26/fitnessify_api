@@ -3,6 +3,7 @@ from unittest.mock import patch
 from flask import Flask, jsonify
 from api.routes import api
 
+
 class TestRoutes(unittest.TestCase):
 
     def setUp(self):
@@ -16,14 +17,19 @@ class TestRoutes(unittest.TestCase):
 
     def test_register_success(self):
         # Mock request data
-        data = {'username': 'test_user', 'email': 'test@example.com', 'password': 'test123'}
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+            'password': 'test123'}
 
         # Make POST request to register endpoint
         response = self.client.post('/register', json=data)
 
         # Assert response status code and message
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json, {'message': 'User registered successfully'})
+        self.assertEqual(
+            response.json, {
+                'message': 'User registered successfully'})
 
     @patch('api.routes.db.session.add')
     @patch('api.routes.db.session.commit')
@@ -45,15 +51,20 @@ class TestRoutes(unittest.TestCase):
         mock_add.side_effect = Exception('Database error')
 
         # Mock request data
-        data = {'username': 'test_user', 'email': 'test@example.com', 'password': 'test123'}
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+            'password': 'test123'}
 
         # Make POST request to register endpoint
         response = self.client.post('/register', json=data)
 
         # Assert response status code and message
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json, {'error': 'An unexpected error occurred'})
+        self.assertEqual(
+            response.json, {
+                'error': 'An unexpected error occurred'})
+
 
 if __name__ == '__main__':
     unittest.main()
-
