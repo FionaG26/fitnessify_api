@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from api.routes import api
+from api.routes import api_bp
 from config import SQLALCHEMY_DATABASE_URI
 from flask_restplus import Api
 
@@ -15,7 +15,7 @@ api = Api(app, version='1.0', title='Fitnessify API',
           description='API documentation for Fitnessify')
 
 # Register Blueprint
-app.register_blueprint(api, url_prefix='/api')
+app.register_blueprint(api_bp, url_prefix='/api')
 
 @app.route('/')
 def root():
