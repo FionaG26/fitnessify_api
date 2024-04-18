@@ -1,7 +1,12 @@
+import sys
 import unittest
 from unittest.mock import patch
 from flask import Flask, jsonify
-from ..api.routes import api
+
+# Append the project root to sys.path
+sys.path.append('..')
+
+from fitnessify_api.api.routes import api
 
 
 class TestRoutes(unittest.TestCase):
