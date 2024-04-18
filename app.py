@@ -14,7 +14,7 @@ app.register_blueprint(api, url_prefix='/api')
 
 @app.route('/')
 def root():
-    return 'Root endpoint'
+    return 'Welcome to Fitnessify'
 
 if __name__ == "__main__":
     app.run(debug=True)
