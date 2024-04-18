@@ -12,5 +12,9 @@ db = SQLAlchemy(app)
 # Register Blueprint
 app.register_blueprint(api, url_prefix='/api')
 
+@app.route('/')
+def root():
+    return 'Root endpoint'
+
 if __name__ == "__main__":
     app.run(debug=True)
