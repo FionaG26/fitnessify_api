@@ -3,6 +3,10 @@ from models import db, User
 
 api = Blueprint('api', __name__)
 
+@api.route('/')
+def index():
+    return 'Welcome to Fitnessify!'
+
 @api.route('/register', methods=['POST'])
 def register():
     try:
