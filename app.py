@@ -8,18 +8,14 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Load configuration from config.py
+app.config.from_object('config')
+
 # Initialize SQLAlchemy for database management
 db = SQLAlchemy(app)
 
 # Initialize Flask-Bcrypt for password hashing
 bcrypt = Bcrypt(app)
-
-# Define User model
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
 
 # Define API endpoints
 @app.route('/register', methods=['POST'])
@@ -73,6 +69,10 @@ def validate_password(password):
     # Implement password strength validation logic (e.g., minimum length)
     # For simplicity, let's assume any non-empty string is a strong password
     return password and len(password) >= 8
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Define main function
 if __name__ == '__main__':
