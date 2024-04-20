@@ -1,16 +1,12 @@
-from flask import Flask
-from flask_restful import Api, Resource, reqparse
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from flask import Flask, render_template
+from sqlalchemy.exc import IntegrityError
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize Flask-RESTful API
-api = Api(app, prefix='/v1')
 
 # Initialize SQLAlchemy for database management
 db = SQLAlchemy(app)
@@ -25,35 +21,59 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
 
-# Define API input data model
-parser = reqparse.RequestParser()
-parser.add_argument('username', type=str, required=True, help='Username')
-parser.add_argument('email', type=str, required=True, help='Email')
-parser.add_argument('password', type=str, required=True, help='Password')
-
 # Define API endpoints
-class UserRegistration(Resource):
-    def post(self):
-        args = parser.parse_args()
-        username = args['username']
-        email = args['email']
-        password = args['password']
+@app.route('/register', methods=['POST'])
+def register_user():
+    data = request.json
+    if not data:
+        return jsonify({'message': 'No data provided'}), 400
 
-        # Implement registration logic here
-        # For example:
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(username=username, email=email, password=hashed_password)
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not username or not email or not password:
+        return jsonify({'message': 'Missing username, email, or password'}), 400
+
+    # Check email format
+    if not validate_email(email):
+        return jsonify({'message': 'Invalid email format'}), 400
+
+    # Check password strength
+    if not validate_password(password):
+        return jsonify({'message': 'Weak password'}), 400
+
+    # Check username availability
+    if User.query.filter_by(username=username).first():
+        return jsonify({'message': 'Username already exists'}), 400
+
+    # Hash password
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    # Create new user
+    new_user = User(username=username, email=email, password=hashed_password)
+
+    try:
         db.session.add(new_user)
         db.session.commit()
+        return jsonify({'message': 'User registered successfully'}), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'message': 'Email already registered'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': 'An error occurred'}), 500
 
-        return {'message': 'User registered successfully'}, 201
+def validate_email(email):
+    # Implement email validation logic (e.g., using regex)
+    # For simplicity, let's assume any non-empty string is a valid email
+    return email and '@' in email
 
-# Add the resource to the API
-api.add_resource(UserRegistration, '/register')
+def validate_password(password):
+    # Implement password strength validation logic (e.g., minimum length)
+    # For simplicity, let's assume any non-empty string is a strong password
+    return password and len(password) >= 8
 
-@app.route('/')
-def index():
-        return render_template('index.html')
 # Define main function
 if __name__ == '__main__':
     # Create database tables based on models
