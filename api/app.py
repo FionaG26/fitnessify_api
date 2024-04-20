@@ -1,3 +1,7 @@
+import sys
+sys.path.append("..")  # Add the parent directory to the Python path
+
+from config import *  # Import configurations from config.py
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
