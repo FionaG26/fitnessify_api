@@ -1,2 +1,4 @@
 # config.py
-SQLALCHEMY_DATABASE_URI = 'postgresql://Fiona:Morlina@1@localhost/fitnessify'
+
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://Fiona24@Fiona24.mysql.pythonanywhere-services.com/Fiona24$Fitnessify'
+SQLALCHEMY_TRACK_MODIFICATIONS = False

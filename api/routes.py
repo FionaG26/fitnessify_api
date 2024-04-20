@@ -1,13 +1,14 @@
+# routes.py
 from flask import Blueprint, request, jsonify
 from models import db, User
 
-api = Blueprint('api', __name__)
+api_bp = Blueprint('api', __name__)
 
-@api.route('/')
+@api_bp.route('/')
 def index():
     return 'Welcome to Fitnessify!'
 
-@api.route('/register', methods=['POST'])
+@api_bp.route('/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
