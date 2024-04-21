@@ -3,17 +3,17 @@ from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from sqlalchemy.exc import IntegrityError
+from models import User
+from utils import validate_email, validate_password
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Load configuration from config.py
-from config import *  # Import configurations from config.py
+app.config['SECRET_KEY'] = 'your_secret_key_here'  # Update with a secure value
 
 # Initialize SQLAlchemy for database management
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
 # Initialize Flask-Bcrypt for password hashing
 bcrypt = Bcrypt(app)
@@ -21,65 +21,49 @@ bcrypt = Bcrypt(app)
 # Define API endpoints
 @app.route('/register', methods=['POST'])
 def register_user():
-    data = request.json
-    if not data:
-        return jsonify({'message': 'No data provided'}), 400
-
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-
-    if not username or not email or not password:
-        return jsonify({'message': 'Missing username, email, or password'}), 400
-
-    # Check email format
-    if not validate_email(email):
-        return jsonify({'message': 'Invalid email format'}), 400
-
-    # Check password strength
-    if not validate_password(password):
-        return jsonify({'message': 'Weak password'}), 400
-
-    # Importing User model here to avoid circular import
-    from models import User
-
-    # Check username availability
-    if User.query.filter_by(username=username).first():
-        return jsonify({'message': 'Username already exists'}), 400
-
-    # Hash password
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    # Create new user
-    new_user = User(username=username, email=email, password=hashed_password)
-
     try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+
+        if not username or not email or not password:
+            return jsonify({'error': 'Missing username, email, or password'}), 400
+
+        # Check email format
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+
+        # Check password strength
+        if not validate_password(password):
+            return jsonify({'error': 'Weak password'}), 400
+
+        # Check username availability
+        if User.query.filter_by(username=username).first():
+            return jsonify({'error': 'Username already exists'}), 400
+
+        # Hash password
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # Create new user
+        new_user = User(username=username, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
+
         return jsonify({'message': 'User registered successfully'}), 201
     except IntegrityError:
         db.session.rollback()
-        return jsonify({'message': 'Email already registered'}), 400
+        return jsonify({'error': 'Email already registered'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': 'An error occurred'}), 500
-
-def validate_email(email):
-    # Implement email validation logic (e.g., using regex)
-    # For simplicity, let's assume any non-empty string is a valid email
-    return email and '@' in email
-
-def validate_password(password):
-    # Implement password strength validation logic (e.g., minimum length)
-    # For simplicity, let's assume any non-empty string is a strong password
-    return password and len(password) >= 8
+        return jsonify({'error': 'An error occurred'}), 500
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-# Initialize SQLAlchemy with the Flask app
-db.init_app(app)
 
 # Define main function
 if __name__ == '__main__':
