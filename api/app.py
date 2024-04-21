@@ -8,9 +8,9 @@ from utils import validate_email, validate_password
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://Fiona:Fiona@localhost/Fitnessify'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your_secret_key_here'  # Update with a secure value
+app.config['SECRET_KEY'] = '32b2ac3412fcba55ed561c14e2de4e5'
 
 # Initialize SQLAlchemy for database management
 db = SQLAlchemy(app)
@@ -65,10 +65,9 @@ def register_user():
 def index():
     return render_template('index.html')
 
+# Create database tables based on models
+with app.app_context():
+        db.create_all()
 # Define main function
 if __name__ == '__main__':
-    # Create database tables based on models
-    with app.app_context():
-        db.create_all()
-    # Run the Flask app
     app.run(debug=True)
