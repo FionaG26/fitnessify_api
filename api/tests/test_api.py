@@ -7,21 +7,24 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app import app, db, User
 
-
 class TestApp(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.app = app.test_client()
-        self.ctx = app.app_context()  # Create application context
-        self.ctx.push()  # Push the context onto the context stack
+        self.ctx = app.app_context()
+        self.ctx.push()
+
+        # Clean up the database before each test
         with app.app_context():
+            db.session.query(User).delete()
+            db.session.commit()
             db.create_all()
 
     def tearDown(self):
         with app.app_context():
             db.session.remove()
             db.drop_all()
-        self.ctx.pop()  # Pop the application context from the stack
+        self.ctx.pop()
 
     def test_register_user(self):
         # Test valid registration
@@ -31,7 +34,7 @@ class TestApp(unittest.TestCase):
             'password': 'StrongPassword123!'
         }
         response = self.app.post('/register', json=data)
-        self.assertEqual(response.status_code, 201)  # Changed to 201
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(json.loads(response.data)['message'], 'User registered successfully')
 
         # Test missing data
@@ -65,7 +68,7 @@ class TestApp(unittest.TestCase):
 
         # Test duplicate username
         new_user = User(username='test_user', email='test@example.com', password='hashed_password')
-        with app.app_context():  # Use application context
+        with app.app_context():
             db.session.add(new_user)
             db.session.commit()
 
@@ -89,14 +92,14 @@ class TestApp(unittest.TestCase):
         self.assertEqual(json.loads(response.data)['error'], 'Email already registered')
 
         # Clean up
-        with app.app_context():  # Use application context
+        with app.app_context():
             db.session.delete(new_user)
             db.session.commit()
 
     def test_login_user(self):
         # Test valid login
         new_user = User(username='test_user', email='test@example.com', password='hashed_password')
-        with app.app_context():  # Use application context
+        with app.app_context():
             db.session.add(new_user)
             db.session.commit()
 
@@ -118,7 +121,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(json.loads(response.data)['error'], 'Invalid email or password')
 
         # Clean up
-        with app.app_context():  # Use application context
+        with app.app_context():
             db.session.delete(new_user)
             db.session.commit()
 
