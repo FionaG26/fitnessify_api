@@ -1,35 +1,126 @@
-import unittest
-import json
-import os
 import sys
+import os
+import unittest
+from flask import json
 
-# Add the project root directory to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Add parent directory to path
 
-# Now import the Flask app and SQLAlchemy instance
-from api.app import app, db
-from api.models import User  # Import the User model
+from app import app, db, User
 
-class TestAPI(unittest.TestCase):
+
+class TestApp(unittest.TestCase):
     def setUp(self):
-        app.config['TESTING'] = True  # Set TESTING config to True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Use in-memory SQLite database for testing
-        db.init_app(app)  # Initialize SQLAlchemy with the Flask app
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+        self.ctx = app.app_context()  # Create application context
+        self.ctx.push()  # Push the context onto the context stack
         with app.app_context():
-            db.create_all()  # Create all database tables
+            db.create_all()
 
     def tearDown(self):
         with app.app_context():
-            db.session.remove()  # Remove session
-            db.drop_all()  # Drop all database tables
+            db.session.remove()
+            db.drop_all()
+        self.ctx.pop()  # Pop the application context from the stack
 
     def test_register_user(self):
-        client = app.test_client()
-        data = {'username': 'testuser', 'email': 'test@example.com', 'password': 'testpassword'}
-        response = client.post('/register', json=data)
-        self.assertEqual(response.status_code, 201)
+        # Test valid registration
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+            'password': 'StrongPassword123!'
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 201)  # Changed to 201
+        self.assertEqual(json.loads(response.data)['message'], 'User registered successfully')
 
-        # Check if the user is successfully registered
-        with app.app_context():
-            user = User.query.filter_by(username='testuser').first()
-            self.assertIsNotNone(user)
+        # Test missing data
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.data)['error'], 'Missing username, email, or password')
+
+        # Test invalid email format
+        data = {
+            'username': 'test_user',
+            'email': 'invalid_email',
+            'password': 'StrongPassword123!'
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.data)['error'], 'Invalid email format')
+
+        # Test weak password
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+            'password': 'weak'
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.data)['error'], 'Weak password')
+
+        # Test duplicate username
+        new_user = User(username='test_user', email='test@example.com', password='hashed_password')
+        with app.app_context():  # Use application context
+            db.session.add(new_user)
+            db.session.commit()
+
+        data = {
+            'username': 'test_user',
+            'email': 'test@example.com',
+            'password': 'StrongPassword123!'
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.data)['error'], 'Username already exists')
+
+        # Test duplicate email
+        data = {
+            'username': 'new_user',
+            'email': 'test@example.com',
+            'password': 'StrongPassword123!'
+        }
+        response = self.app.post('/register', json=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.data)['error'], 'Email already registered')
+
+        # Clean up
+        with app.app_context():  # Use application context
+            db.session.delete(new_user)
+            db.session.commit()
+
+    def test_login_user(self):
+        # Test valid login
+        new_user = User(username='test_user', email='test@example.com', password='hashed_password')
+        with app.app_context():  # Use application context
+            db.session.add(new_user)
+            db.session.commit()
+
+        data = {
+            'email': 'test@example.com',
+            'password': 'StrongPassword123!'
+        }
+        response = self.app.post('/login', json=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('access_token', json.loads(response.data))
+
+        # Test invalid credentials
+        data = {
+            'email': 'test@example.com',
+            'password': 'WrongPassword123!'
+        }
+        response = self.app.post('/login', json=data)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(json.loads(response.data)['error'], 'Invalid email or password')
+
+        # Clean up
+        with app.app_context():  # Use application context
+            db.session.delete(new_user)
+            db.session.commit()
+
+if __name__ == '__main__':
+    unittest.main()
