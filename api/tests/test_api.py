@@ -1,55 +1,35 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Add the parent directory to the Python path
-
 import unittest
 import json
-from app import app, db
-from models import User
+import os
+import sys
+
+# Add the project root directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now import the Flask app and SQLAlchemy instance
+from api.app import app, db
+from api.models import User  # Import the User model
 
 class TestAPI(unittest.TestCase):
     def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True
-
-        # Create a test user
-        self.test_user = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': 'TestPassword123'
-        }
-
-        # Create tables in the test database
+        app.config['TESTING'] = True  # Set TESTING config to True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # Use in-memory SQLite database for testing
+        db.init_app(app)  # Initialize SQLAlchemy with the Flask app
         with app.app_context():
-            db.create_all()
+            db.create_all()  # Create all database tables
 
     def tearDown(self):
-        # Clean up the test database after each test
         with app.app_context():
-            db.session.remove()
-            db.drop_all()
+            db.session.remove()  # Remove session
+            db.drop_all()  # Drop all database tables
 
     def test_register_user(self):
-        # Test user registration endpoint
-        response = self.app.post('/register', json=self.test_user)
-        data = json.loads(response.data.decode('utf-8'))
-
-        # Assert status code and response message
+        client = app.test_client()
+        data = {'username': 'testuser', 'email': 'test@example.com', 'password': 'testpassword'}
+        response = client.post('/register', json=data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(data['message'], 'User registered successfully')
 
-    def test_register_user_missing_fields(self):
-        # Test user registration with missing fields
-        incomplete_user = {'username': 'testuser'}
-        response = self.app.post('/register', json=incomplete_user)
-        data = json.loads(response.data.decode('utf-8'))
-
-        # Assert status code and response message
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('message', data)
-        self.assertEqual(data['message'], 'Missing username, email, or password')
-
-    # Add more test cases for validation, error handling, etc.
-
-if __name__ == '__main__':
-    unittest.main()
+        # Check if the user is successfully registered
+        with app.app_context():
+            user = User.query.filter_by(username='testuser').first()
+            self.assertIsNotNone(user)

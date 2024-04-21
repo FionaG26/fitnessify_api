@@ -1,7 +1,4 @@
 import sys
-sys.path.append("..")  # Add the parent directory to the Python path
-
-from config import *  # Import configurations from config.py
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -13,10 +10,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Load configuration from config.py
-app.config.from_object('config')
+from config import *  # Import configurations from config.py
 
 # Initialize SQLAlchemy for database management
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 # Initialize Flask-Bcrypt for password hashing
 bcrypt = Bcrypt(app)
@@ -42,6 +39,9 @@ def register_user():
     # Check password strength
     if not validate_password(password):
         return jsonify({'message': 'Weak password'}), 400
+
+    # Importing User model here to avoid circular import
+    from models import User
 
     # Check username availability
     if User.query.filter_by(username=username).first():
@@ -77,6 +77,9 @@ def validate_password(password):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# Initialize SQLAlchemy with the Flask app
+db.init_app(app)
 
 # Define main function
 if __name__ == '__main__':
