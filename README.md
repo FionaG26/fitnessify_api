@@ -22,9 +22,9 @@ This project is about a simple user registration API built using Python with Fla
     ```
 
 4. ** Database Configuration**:
-    - Configure the PostgreSQL database URI in `config.py`:
+    - Configure the MySQL database URI in `config.py`:
         ```python
-        SQLALCHEMY_DATABASE_URI = 'postgresql://your_username:your_password@localhost/fitnessify'
+        SQLALCHEMY_DATABASE_URI= 'mysql+mysqlconnector://your_username:your_password@localhost/databasename'
         ```
 
 5. ** Running the Application**:
