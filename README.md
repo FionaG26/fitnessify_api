@@ -1,6 +1,6 @@
 # Fitnessify_api
 
-This project is about a simple user registration API built using Python with Flask framework. It provides endpoints for user registration, data validation, secure password storage, and error handling. The API integrates with PostgreSQL for secure storage of user data.
+This project is about a simple user registration API built using Python with Flask framework. It provides endpoints for user registration, data validation, secure password storage, and error handling. The API integrates with MySQL for secure storage of user data.
 
 # Setup
 
@@ -47,24 +47,32 @@ This project is about a simple user registration API built using Python with Fla
 
 ```
 fitnessify_api/
-├── app.py
-├── models.py
-├── config.py
-├── api/
-│   ├── __init__.py
-│   └── routes.py
-├── tests/
-│   ├── __init__.py
-│   └── test_routes.py
-│   └── test_models.py
-└── docs/
-└── api_documentation.md
-├── requirements.txt
+│
+├── README.md               # Documentation
+├── api_documentation.md    # API Documentation
+├── __pycache__             # Python bytecode cache
+├── api/                    # Main API package
+│   ├── __init__.py         # Package initializer
+│   ├── __pycache__         # Python bytecode cache for API package
+│   ├── app.py              # Flask application setup
+│   ├── config.py           # Configuration settings
+│   ├── models.py           # Data models definition
+│   ├── routes.py           # API endpoints definition
+│   ├── static/             # Static files (e.g., CSS, JavaScript)
+│   ├── templates/          # HTML templates
+│   └── tests/              # Unit tests for the API
+├── create_db.py            # Script for creating database
+├── extensions.py           # Flask extensions setup
+├── instance/               # Instance folder for configuration (not included in repository)
+├── users.db                # Database file for storing user data
+└── venv/                   # Virtual environment (Python dependencies)
+
+
 ```
 
 # Contributors
 
-- [Fiona Githaiga](https: // github.com / FionaG26)
+- [Fiona Githaiga](https://github.com/FionaG26)
 
 # License
 
