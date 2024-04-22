@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
-from models import db, User
-from utils import validate_email, validate_password
+from .models import db, User
+from .utils import validate_email, validate_password
 from flask_bcrypt import Bcrypt
 
 api_bp = Blueprint('api', __name__)
